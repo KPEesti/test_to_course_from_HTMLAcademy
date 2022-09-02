@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Create Studio</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:weght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="import" id="js" href="./js/index.js" />
+  </head>
+
+  <body>
+    <main>
+      <div class="container">
+        <div class="columns-container">
+          <div class="left-column">
+            <h1>
+              Мастер-классы<br />
+              от Create Studio
+            </h1>
+            <button type="submit" class="button" onclick="showPopup()">
+              Записаться
+            </button>
+          </div>
+          <div class="right-column">
+            <img
+              src="img/office.png"
+              alt="Фотография офиса"
+              width="552"
+              height="376"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="wrapper hidden" id="popup" onclick="hidePopup()">
+        <div class="popup" onclick="event.stopPropagation()">
+          <div id="popup__form">
+            <h2>Заявка на участие</h2>
+            <form action="" onsubmit="return handleSubmit();" id="form">
+              <input
+                type="text"
+                placeholder="ФИО"
+                required
+                id="fullName"
+                maxlength="50"
+              />
+              <input
+                type="text"
+                placeholder="E-mail"
+                required
+                id="email"
+                onchange="emailValidation(this)"
+              />
+              <span class="invalid hidden" id="warning"
+                >Что-то пошло не так, попробуйте позже</span
+              >
+              <input type="submit" value="Отправить" id="submit" disabled />
+            </form>
+          </div>
+          <div>
+            <div id="popup__alert" class="hidden">
+              <h2>Форма успешно отправлена</h2>
+              <input
+                type="submit"
+                value="Готово"
+                id="submit"
+                onclick="hidePopup()"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+
+  <script>
+    let emailReg = new RegExp(
+      /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i
+    );
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key == "Escape") {
+        hidePopup();
+      }
+    });
+
+    function showPopup() {
+      let popup = document.getElementById("popup");
+      popup.classList.remove("hidden");
+    }
+
+    function hidePopup() {
+      let popup = document.getElementById("popup");
+      popup.classList.add("hidden");
+
+      let form = document.getElementById("popup__form");
+      form.classList.remove("hidden");
+
+      let alert = document.getElementById("popup__alert");
+      alert.classList.add("hidden");
+
+      let fio = document.getElementById("fullName");
+      fio.value = "";
+
+      let email = document.getElementById("email");
+      email.value = "";
+      emailValidation(email);
+      email.classList.remove("invalid");
+
+      let warningMessage = document.getElementById("warning");
+      warningMessage.classList.add("hidden");
+    }
+
+    function handleSubmit() {
+      let fio = document.getElementById("fullName");
+      let email = document.getElementById("email");
+
+      let json = {
+        email: email.value,
+        fio: fio.value,
+        date: new Date(Date.now()).toJSON(),
+      };
+      fetch("https://jsonplaceholder.typicode.com/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify(json),
+      })
+        .then((response) => {
+          if (response.ok) {
+            let form = document.getElementById("popup__form");
+            let alert = document.getElementById("popup__alert");
+            form.classList.add("hidden");
+            alert.classList.remove("hidden");
+          } else {
+            console.log(response.status);
+            let warningMessage = document.getElementById("warning");
+            warningMessage.classList.remove("hidden");
+          }
+        })
+        .catch((e) => {
+          let warningMessage = document.getElementById("warning");
+          warningMessage.classList.remove("hidden");
+        });
+      return false;
+    }
+
+    function emailValidation(email) {
+      let submitButton = document.getElementById("submit");
+      if (!emailReg.test(email.value)) {
+        email.classList.add("invalid");
+        submitButton.disabled = true;
+      } else {
+        email.classList.remove("invalid");
+        submitButton.disabled = false;
+      }
+    }
+  </script>
+</html>
